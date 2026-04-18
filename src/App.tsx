@@ -15,19 +15,16 @@ import Fallen from './assets/Fallen.mp3'
 
 const App = () => {
   const [isBookOpen, setIsBookOpen] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); 
-  const [showOverlay, setShowOverlay] = useState(false); 
-  
-  // Initialize audioRef with the Fallen track immediately
+  const [hasStarted, setHasStarted] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Create the audio instance once
     const audio = new Audio(Fallen);
     audio.loop = true;
     audioRef.current = audio;
 
-    // Show the "For You" button after a short delay
     const timer = setTimeout(() => {
       setShowOverlay(true);
     }, 1000);
@@ -41,14 +38,12 @@ const App = () => {
     };
   }, []);
 
-  // Handler for the "For You" button
   const startCelebration = async () => {
     if (audioRef.current) {
       try {
         await audioRef.current.play();
-        console.log("Music started!");
       } catch (err) {
-        console.error("Audio playback failed. Interaction might have been too weak:", err);
+        console.error("Audio playback failed:", err);
       }
     }
     setHasStarted(true);
@@ -82,7 +77,7 @@ const App = () => {
   });
 
   useEffect(() => {
-    if (!hasStarted) return; 
+    if (!hasStarted) return;
     const timer = setInterval(() => {
       setIndices((prev) => ({
         currentIndex: prev.currentIndex === images.length - 1 ? 0 : prev.currentIndex + 1,
@@ -125,10 +120,9 @@ const App = () => {
 
   return (
     <div className="h-screen w-screen grid place-items-center bg-linear-to-br from-violet-950 to-purple-900 overflow-hidden relative font-sans isolate">
-      
-      {/* For You Overlay */}
+
       {showOverlay && !hasStarted && (
-        <div 
+        <div
           onClick={startCelebration}
           className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center cursor-pointer transition-opacity duration-500"
         >
@@ -218,7 +212,7 @@ const App = () => {
                   height: `${item.size}px`,
                   left: `${item.left}vw`,
                   opacity: item.opacity,
-                  // @ts-ignore - custom CSS property
+                  // @ts-ignore
                   "--drift": `${item.drift}px`,
                   animationDuration: `${item.duration}s`,
                   animationDelay: `${item.delay}s`,
@@ -332,24 +326,27 @@ const App = () => {
         </>
       )}
 
+      {/* UPDATED MODAL SECTION */}
       {isBookOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8 overflow-y-auto">
-          <div className="relative w-full max-w-6xl bg-white rounded-xl shadow-2xl flex flex-col md:flex-row min-h-fit max-h-[95vh] border-[8px] md:border-[16px] border-[#3d2422] overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8">
+          {/* Main Book Container - Added max-h and overflow-y-auto */}
+          <div className="relative w-full max-w-6xl bg-white rounded-xl shadow-2xl flex flex-col md:flex-row max-h-[90vh] border-[8px] md:border-[16px] border-[#3d2422] overflow-y-auto">
             <button
               onClick={() => {
                 setIsBookOpen(false);
                 playMusic();
               }}
-              className="absolute top-4 right-4 text-gray-800 z-50 hover:scale-125 transition-transform bg-white/80 rounded-full p-1 shadow-md hover:cursor-pointer"
+              className="fixed top-6 right-6 text-gray-800 z-[110] hover:scale-125 transition-transform bg-white/80 rounded-full p-2 shadow-md hover:cursor-pointer"
             >
               <FaTimes size={28} />
             </button>
 
-            <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 bg-[#fdfbf7]">
+            {/* Left Page */}
+            <div className="flex-1 p-6 md:p-10 flex flex-col items-center justify-start border-b md:border-b-0 md:border-r border-gray-200 bg-[#fdfbf7]">
               <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">April 4, 2025</h3>
               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
                 <video
-                  className="w-full h-auto max-h-[400px] object-cover"
+                  className="w-full h-auto max-h-[250px] object-cover" // Reduced Height
                   controls
                   playsInline
                   onPlay={pauseMusic}
@@ -359,13 +356,17 @@ const App = () => {
                   <source src={makatiFlower} type="video/mp4" />
                 </video>
               </div>
+              <p className="mt-6 text-gray-700 font-serif leading-relaxed text-center italic">
+                {/* A beautiful moment captured in Makati... */}
+              </p>
             </div>
 
-            <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center bg-[#fdfbf7]">
+            {/* Right Page */}
+            <div className="flex-1 p-6 md:p-10 flex flex-col items-center justify-start bg-[#fdfbf7]">
               <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">March 18, 2026</h3>
               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
                 <video
-                  className="w-full h-auto max-h-[400px] object-cover"
+                  className="w-full h-auto max-h-[250px] object-cover" // Reduced Height
                   controls
                   playsInline
                   onPlay={pauseMusic}
@@ -375,6 +376,9 @@ const App = () => {
                   <source src={makatiCake} type="video/mp4" />
                 </video>
               </div>
+              <p className="mt-6 text-gray-700 font-serif leading-relaxed text-center italic">
+                {/* Another year, another memory. */}
+              </p>
             </div>
           </div>
         </div>
