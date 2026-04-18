@@ -1,6 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { BsFillBalloonHeartFill, BsBalloonFill } from "react-icons/bs";
 import { FaHeart, FaBookOpen, FaTimes } from "react-icons/fa";
+import makatiFlower from "./assets/makati-flower.mp4";
+import makatiCake from "./assets/makati-cake.mp4";
+import pic1 from './assets/pics/1.jpg'
+import pic2 from './assets/pics/2.jpg'
+import pic3 from './assets/pics/3.jpg'
+import pic4 from './assets/pics/4.jpg'
+import pic5 from './assets/pics/5.jpg'
+import pic6 from './assets/pics/6.jpg'
+import pic7 from './assets/pics/7.jpg'
+import pic8 from './assets/pics/8.jpg'
 
 const App = () => {
   const [isBookOpen, setIsBookOpen] = useState(false);
@@ -14,10 +24,7 @@ const App = () => {
   const balloonEntranceDelay = carouselDelay + 0.5;
 
   const images = [
-    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1527477396000-e27163b481c2?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1513201099795-a634c31127fe?q=80&w=400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop",
+    pic1,pic2,pic3,pic4,pic5,pic6,pic7,pic8
   ];
 
   const [{ currentIndex, prevIndex }, setIndices] = useState({
@@ -148,7 +155,6 @@ const App = () => {
               opacity: item.opacity,
               animationDuration: `${item.duration}s`,
               animationDelay: `${item.delay}s`,
-              // "--drift": `${item.drift}px`,
             }}
           >
             <div className="inner-rotator" style={{ animationDuration: `${item.spinSpeed}s` }}>
@@ -274,30 +280,34 @@ const App = () => {
             {/* Book Spine (Desktop Only) */}
             <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1.5 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 z-10 shadow-inner" />
 
-            {/* Left Page */}
+            {/* Left Page - Local Video 1 */}
             <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 bg-[#fdfbf7]">
                <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">April 4, 2025</h3>
-               <div className="w-full relative pt-[56.25%] bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
-                  <iframe 
-                    className="absolute top-0 left-0 w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                    title="Memory 1"
-                    allowFullScreen
-                  />
+               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
+                  <video 
+                    className="w-full h-auto max-h-[400px] object-cover" 
+                    controls 
+                    playsInline
+                  >
+                    <source src={makatiFlower} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
                </div>
                <p className="mt-6 text-sm font-serif text-gray-400 tracking-widest">PAGE 01</p>
             </div>
 
-            {/* Right Page */}
+            {/* Right Page - Local Video 2 */}
             <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center bg-[#fdfbf7]">
                 <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">March 18, 2026</h3>
-                <div className="w-full relative pt-[56.25%] bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
-                   <iframe 
-                    className="absolute top-0 left-0 w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                    title="Memory 2"
-                    allowFullScreen
-                  />
+                <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
+                   <video 
+                     className="w-full h-auto max-h-[400px] object-cover" 
+                     controls 
+                     playsInline
+                   >
+                     <source src={makatiCake} type="video/mp4" />
+                     Your browser does not support the video tag.
+                   </video>
                 </div>
                 <p className="mt-6 text-sm font-serif text-gray-400 tracking-widest">PAGE 02</p>
             </div>
