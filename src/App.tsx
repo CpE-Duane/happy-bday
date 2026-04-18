@@ -5,7 +5,6 @@ import makatiCake from "./assets/makati-cake.mp4";
 import pangasinanCake from "./assets/pangasinanCake.mp4"
 import pic1 from './assets/pics/1.jpg'
 import pic2 from './assets/pics/2.jpg'
-import pic3 from './assets/pics/3.jpg'
 import pic4 from './assets/pics/4.jpg'
 import pic5 from './assets/pics/5.jpg'
 import pic6 from './assets/pics/6.jpg'
@@ -74,7 +73,7 @@ const App = () => {
   const carouselDelay = ribbonDelay + 0.8;
   const balloonEntranceDelay = carouselDelay + 0.5;
 
-  const images = [pic1, pic2, pic3, pic4, pic5, pic6, pic7, pic8, pic9, pic10, pic11, pic12, pic13];
+  const images = [pic1, pic2, pic4, pic5, pic6, pic7, pic8, pic9, pic10, pic11, pic12, pic13];
 
   const [{ currentIndex, prevIndex }, setIndices] = useState({
     currentIndex: 0,
@@ -351,7 +350,7 @@ const App = () => {
               <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">April 4, 2025</h3>
               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
                 <video
-                  className="w-full h-auto max-h-[300px] object-cover" // Reduced Height
+                  className="w-full h-auto max-h-[300px]" // Reduced Height
                   controls
                   playsInline
                   onPlay={pauseMusic}
@@ -362,7 +361,7 @@ const App = () => {
                 </video>
               </div>
               <p className="mt-6 text-gray-700 font-serif leading-relaxed text-center italic">
-                {/* A beautiful moment captured in Makati... */}
+                From then until now—still my favorite view.
               </p>
             </div>
 
@@ -371,7 +370,7 @@ const App = () => {
               <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">March 18, 2026</h3>
               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
                 <video
-                  className="w-full h-auto max-h-[300px] object-cover" // Reduced Height
+                  className="w-full h-auto max-h-[265px] " // Reduced Height
                   controls
                   playsInline
                   onPlay={pauseMusic}
@@ -382,7 +381,7 @@ const App = () => {
                 </video>
               </div>
               <p className="mt-6 text-gray-700 font-serif leading-relaxed text-center italic">
-                {/* Another year, another memory. */}
+                Still one of my favorite memories of you.
               </p>
             </div>
           </div>
