@@ -17,15 +17,19 @@ const App = () => {
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false); 
   const [showOverlay, setShowOverlay] = useState(false); 
-  const audioRef = useRef(null);
+  
+  // Initialize audioRef with the Fallen track immediately
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize Audio Object Once
   useEffect(() => {
-    audioRef.current = new Audio(Fallen);
-    audioRef.current.loop = true;
+    // Create the audio instance once
+    const audio = new Audio(Fallen);
+    audio.loop = true;
+    audioRef.current = audio;
 
+    // Show the "For You" button after a short delay
     const timer = setTimeout(() => {
-      if (!hasStarted) setShowOverlay(true);
+      setShowOverlay(true);
     }, 1000);
 
     return () => {
@@ -37,16 +41,15 @@ const App = () => {
     };
   }, []);
 
-  // THE KEY FIX: The play() command MUST be inside the click handler
-  const startCelebration = () => {
+  // Handler for the "For You" button
+  const startCelebration = async () => {
     if (audioRef.current) {
-      audioRef.current.play()
-        .then(() => {
-          console.log("Playback started successfully");
-        })
-        .catch((err) => {
-          console.error("Playback blocked by browser:", err);
-        });
+      try {
+        await audioRef.current.play();
+        console.log("Music started!");
+      } catch (err) {
+        console.error("Audio playback failed. Interaction might have been too weak:", err);
+      }
     }
     setHasStarted(true);
     setShowOverlay(false);
@@ -57,9 +60,8 @@ const App = () => {
   };
 
   const playMusic = () => {
-    // Only resume if the celebration has already started
     if (hasStarted && !isBookOpen && audioRef.current) {
-      audioRef.current.play();
+      audioRef.current.play().catch((err: Error) => console.log("Resume failed:", err));
     }
   };
 
@@ -124,14 +126,15 @@ const App = () => {
   return (
     <div className="h-screen w-screen grid place-items-center bg-linear-to-br from-violet-950 to-purple-900 overflow-hidden relative font-sans isolate">
       
-      {showOverlay && (
+      {/* For You Overlay */}
+      {showOverlay && !hasStarted && (
         <div 
           onClick={startCelebration}
-          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center cursor-pointer animate-in fade-in duration-700"
+          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center cursor-pointer transition-opacity duration-500"
         >
-          <div className="bg-white/10 p-10 rounded-3xl border border-white/20 text-center animate-bounce shadow-2xl">
+          <div className="bg-white/10 p-12 rounded-full border-2 border-white/30 text-center animate-bounce shadow-[0_0_50px_rgba(255,255,255,0.2)]">
             <FaMusic className="text-white text-6xl mb-4 mx-auto opacity-90" />
-            <p className="text-white font-bold tracking-widest uppercase text-lg">For you</p>
+            <p className="text-white font-black tracking-[0.3em] uppercase text-xl">For You</p>
           </div>
         </div>
       )}
@@ -215,6 +218,8 @@ const App = () => {
                   height: `${item.size}px`,
                   left: `${item.left}vw`,
                   opacity: item.opacity,
+                  // @ts-ignore - custom CSS property
+                  "--drift": `${item.drift}px`,
                   animationDuration: `${item.duration}s`,
                   animationDelay: `${item.delay}s`,
                 }}
@@ -232,7 +237,7 @@ const App = () => {
             ))}
           </div>
 
-          <div className="h-[70vh] w-[80vw] md:w-[60vw] xl:w-[40vw] xl:h-[80vh] shadow-2xl rounded-3xl bg-linear-to-tr from-purple-500/80 via-violet-600/80 to-fuchsia-500/80 backdrop-blur-md border border-white/20 flex flex-col items-center justify-start pt-8 relative z-10 animate-in fade-in zoom-in duration-1000">
+          <div className="h-[70vh] w-[80vw] md:w-[60vw] xl:w-[40vw] xl:h-[80vh] shadow-2xl rounded-3xl bg-linear-to-tr from-purple-500/80 via-violet-600/80 to-fuchsia-500/80 backdrop-blur-md border border-white/20 flex flex-col items-center justify-start pt-8 relative z-10 animate-in fade-in duration-1000">
 
             {["left-[-30px]", "right-[30px]"].map((pos, sideIdx) => (
               <div key={sideIdx} className={`absolute ${pos} bottom-1/4 z-20`}>
