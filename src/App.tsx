@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { BsFillBalloonHeartFill, BsBalloonFill } from "react-icons/bs";
-import { FaHeart, FaBookOpen, FaTimes } from "react-icons/fa";
+import { FaHeart, FaBookOpen, FaTimes, FaMusic } from "react-icons/fa";
 import makatiFlower from "./assets/makati-flower.mp4";
 import makatiCake from "./assets/makati-cake.mp4";
 import pic1 from './assets/pics/1.jpg'
@@ -11,9 +11,58 @@ import pic5 from './assets/pics/5.jpg'
 import pic6 from './assets/pics/6.jpg'
 import pic7 from './assets/pics/7.jpg'
 import pic8 from './assets/pics/8.jpg'
+import Fallen from './assets/Fallen.mp3'
 
 const App = () => {
   const [isBookOpen, setIsBookOpen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false); 
+  const [showOverlay, setShowOverlay] = useState(false); 
+  const audioRef = useRef(null);
+
+  // Initialize Audio Object Once
+  useEffect(() => {
+    audioRef.current = new Audio(Fallen);
+    audioRef.current.loop = true;
+
+    const timer = setTimeout(() => {
+      if (!hasStarted) setShowOverlay(true);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // THE KEY FIX: The play() command MUST be inside the click handler
+  const startCelebration = () => {
+    if (audioRef.current) {
+      audioRef.current.play()
+        .then(() => {
+          console.log("Playback started successfully");
+        })
+        .catch((err) => {
+          console.error("Playback blocked by browser:", err);
+        });
+    }
+    setHasStarted(true);
+    setShowOverlay(false);
+  };
+
+  const pauseMusic = () => {
+    if (audioRef.current) audioRef.current.pause();
+  };
+
+  const playMusic = () => {
+    // Only resume if the celebration has already started
+    if (hasStarted && !isBookOpen && audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
   const happy = "Happy".split("");
   const birthday = "Birthday".split("");
 
@@ -23,9 +72,7 @@ const App = () => {
   const carouselDelay = ribbonDelay + 0.8;
   const balloonEntranceDelay = carouselDelay + 0.5;
 
-  const images = [
-    pic1,pic2,pic3,pic4,pic5,pic6,pic7,pic8
-  ];
+  const images = [pic1, pic2, pic3, pic4, pic5, pic6, pic7, pic8];
 
   const [{ currentIndex, prevIndex }, setIndices] = useState({
     currentIndex: 0,
@@ -33,6 +80,7 @@ const App = () => {
   });
 
   useEffect(() => {
+    if (!hasStarted) return; 
     const timer = setInterval(() => {
       setIndices((prev) => ({
         currentIndex: prev.currentIndex === images.length - 1 ? 0 : prev.currentIndex + 1,
@@ -40,7 +88,7 @@ const App = () => {
       }));
     }, 3000);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [images.length, hasStarted]);
 
   const floatingItems = useMemo(() => {
     const count = 100;
@@ -75,6 +123,19 @@ const App = () => {
 
   return (
     <div className="h-screen w-screen grid place-items-center bg-linear-to-br from-violet-950 to-purple-900 overflow-hidden relative font-sans isolate">
+      
+      {showOverlay && (
+        <div 
+          onClick={startCelebration}
+          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center cursor-pointer animate-in fade-in duration-700"
+        >
+          <div className="bg-white/10 p-10 rounded-3xl border border-white/20 text-center animate-bounce shadow-2xl">
+            <FaMusic className="text-white text-6xl mb-4 mx-auto opacity-90" />
+            <p className="text-white font-bold tracking-widest uppercase text-lg">For you</p>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes letter-entrance {
           0% { opacity: 0; transform: translateY(20px) scale(0); filter: brightness(1.1); }
@@ -142,174 +203,173 @@ const App = () => {
         }
       `}</style>
 
-      {/* Floating Background Elements */}
-      <div className="absolute inset-0 z-0">
-        {floatingItems.map((item) => (
-          <div
-            key={item.id}
-            className={`floating-item ${item.shapeClass}`}
-            style={{
-              width: `${item.size}px`,
-              height: `${item.size}px`,
-              left: `${item.left}vw`,
-              opacity: item.opacity,
-              animationDuration: `${item.duration}s`,
-              animationDelay: `${item.delay}s`,
-            }}
-          >
-            <div className="inner-rotator" style={{ animationDuration: `${item.spinSpeed}s` }}>
+      {hasStarted && (
+        <>
+          <div className="absolute inset-0 z-0">
+            {floatingItems.map((item) => (
               <div
-                className="item-sparkle"
+                key={item.id}
+                className={`floating-item ${item.shapeClass}`}
                 style={{
-                  backgroundColor: item.sparkleColor,
-                  boxShadow: `0 0 10px ${item.sparkleColor}`,
+                  width: `${item.size}px`,
+                  height: `${item.size}px`,
+                  left: `${item.left}vw`,
+                  opacity: item.opacity,
+                  animationDuration: `${item.duration}s`,
+                  animationDelay: `${item.delay}s`,
                 }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="h-[70vh] w-[80vw] md:w-[60vw] xl:w-[40vw] xl:h-[80vh] shadow-2xl rounded-3xl bg-linear-to-tr from-purple-500/80 via-violet-600/80 to-fuchsia-500/80 backdrop-blur-md border border-white/20 flex flex-col items-center justify-start pt-8 relative z-10">
-        
-        {/* Balloon Bundles */}
-        {[ "left-[-30px]", "right-[30px]" ].map((pos, sideIdx) => (
-           <div key={sideIdx} className={`absolute ${pos} bottom-1/4 z-20`}>
-           <div className="relative">
-             {balloonBundle.map((b) => (
-               <div
-                 key={b.id}
-                 className="absolute opacity-0 animate-balloon-bundle flex flex-col items-center"
-                 style={{
-                   animationDelay: `${balloonEntranceDelay + b.delay}s`,
-                   left: `${b.x}px`,
-                   top: `${b.y}px`,
-                   transform: `rotate(${b.rotate}deg)`
-                 }}
-               >
-                 <div className="relative">
-                   <BsBalloonFill className={`text-5xl ${b.color} drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]`} />
-                   <FaHeart className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white/50" />
-                 </div>
-                 <div className="w-0.5 h-32 bg-white/20 -mt-1 rounded-full origin-top" style={{ transform: `rotate(${-b.rotate / 2}deg)` }} />
-               </div>
-             ))}
-           </div>
-         </div>
-        ))}
-
-        <div className="flex flex-col items-center select-none relative">
-          <div className="flex gap-1 relative z-10">
-            {happy.map((char, i) => (
-              <span key={i} className="inline-block text-5xl md:text-6xl xl:text-7xl font-black text-purple-50 animate-letter-combined text-[shadow:4px_4px_0_#000,-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000]" style={{ animationDelay: `${i * letterSpeed}s` }}>{char}</span>
-            ))}
-          </div>
-          <div className="flex gap-1 -mt-4 mb-4 relative z-10">
-            {birthday.map((char, i) => (
-              <span key={i} className="inline-block text-6xl md:text-7xl xl:text-8xl font-black text-purple-300 animate-letter-combined text-[shadow:6px_6px_0_#000,-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000]" style={{ animationDelay: `${(i + happy.length) * letterSpeed}s` }}>{char}</span>
+              >
+                <div className="inner-rotator" style={{ animationDuration: `${item.spinSpeed}s` }}>
+                  <div
+                    className="item-sparkle"
+                    style={{
+                      backgroundColor: item.sparkleColor,
+                      boxShadow: `0 0 10px ${item.sparkleColor}`,
+                    }}
+                  />
+                </div>
+              </div>
             ))}
           </div>
 
-          <div className="relative mb-8 animate-entrance-custom opacity-0" style={{ animationDelay: `${ribbonDelay}s` }}>
-            <div className="absolute -left-8 top-[-2px] h-10 w-16 bg-purple-900 -z-10 [clip-path:polygon(0%_0%,_100%_0%,_100%_100%,_0%_100%,_25%_50%)]" />
-            <div className="relative bg-purple-600 w-[180px] lg:w-[250px] flex justify-between items-center px-6 py-1.5 text-white font-bold italic border-y-2 border-white/30 shadow-xl z-10 overflow-hidden">
-              <BsFillBalloonHeartFill className="text-xl animate-bounce text-pink-300" />
-              <span className="text-sm tracking-widest">19 April ...</span>
-              <BsFillBalloonHeartFill className="text-xl animate-bounce text-pink-300" style={{ animationDelay: '0.5s' }} />
+          <div className="h-[70vh] w-[80vw] md:w-[60vw] xl:w-[40vw] xl:h-[80vh] shadow-2xl rounded-3xl bg-linear-to-tr from-purple-500/80 via-violet-600/80 to-fuchsia-500/80 backdrop-blur-md border border-white/20 flex flex-col items-center justify-start pt-8 relative z-10 animate-in fade-in zoom-in duration-1000">
+
+            {["left-[-30px]", "right-[30px]"].map((pos, sideIdx) => (
+              <div key={sideIdx} className={`absolute ${pos} bottom-1/4 z-20`}>
+                <div className="relative">
+                  {balloonBundle.map((b) => (
+                    <div
+                      key={b.id}
+                      className="absolute opacity-0 animate-balloon-bundle flex flex-col items-center"
+                      style={{
+                        animationDelay: `${balloonEntranceDelay + b.delay}s`,
+                        left: `${b.x}px`,
+                        top: `${b.y}px`,
+                        transform: `rotate(${b.rotate}deg)`
+                      }}
+                    >
+                      <div className="relative">
+                        <BsBalloonFill className={`text-5xl ${b.color} drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]`} />
+                        <FaHeart className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white/50" />
+                      </div>
+                      <div className="w-0.5 h-32 bg-white/20 -mt-1 rounded-full origin-top" style={{ transform: `rotate(${-b.rotate / 2}deg)` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="flex flex-col items-center select-none relative">
+              <div className="flex gap-1 relative z-10">
+                {happy.map((char, i) => (
+                  <span key={i} className="inline-block text-5xl md:text-6xl xl:text-7xl font-black text-purple-50 animate-letter-combined text-[shadow:4px_4px_0_#000,-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000]" style={{ animationDelay: `${i * letterSpeed}s` }}>{char}</span>
+                ))}
+              </div>
+              <div className="flex gap-1 -mt-4 mb-4 relative z-10">
+                {birthday.map((char, i) => (
+                  <span key={i} className="inline-block text-6xl md:text-7xl xl:text-8xl font-black text-purple-300 animate-letter-combined text-[shadow:6px_6px_0_#000,-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000]" style={{ animationDelay: `${(i + happy.length) * letterSpeed}s` }}>{char}</span>
+                ))}
+              </div>
+
+              <div className="relative mb-8 animate-entrance-custom opacity-0" style={{ animationDelay: `${ribbonDelay}s` }}>
+                <div className="absolute -left-8 top-[-2px] h-10 w-16 bg-purple-900 -z-10 [clip-path:polygon(0%_0%,_100%_0%,_100%_100%,_0%_100%,_25%_50%)]" />
+                <div className="relative bg-purple-600 w-[180px] lg:w-[250px] flex justify-between items-center px-6 py-1.5 text-white font-bold italic border-y-2 border-white/30 shadow-xl z-10 overflow-hidden">
+                  <BsFillBalloonHeartFill className="text-xl animate-bounce text-pink-300" />
+                  <span className="text-sm tracking-widest">19 April ...</span>
+                  <BsFillBalloonHeartFill className="text-xl animate-bounce text-pink-300" style={{ animationDelay: '0.5s' }} />
+                </div>
+                <div className="absolute -right-8 top-[-2px] h-10 w-16 bg-purple-900 -z-10 [clip-path:polygon(0%_0%,_100%_0%,_75%_50%,_100%_100%,_0%_100%)]" />
+              </div>
+
+              <div className="relative mt-2 animate-entrance-custom opacity-0" style={{ animationDelay: `${carouselDelay}s` }}>
+                <div className="relative border-4 border-white rounded-full h-[260px] w-[260px] overflow-hidden bg-black/20 shadow-2xl z-10">
+                  {images.map((img, index) => {
+                    const isActive = index === currentIndex;
+                    const isExiting = index === prevIndex;
+                    let transformClasses = "translate-x-full -translate-y-full opacity-0 scale-110";
+                    if (isActive) transformClasses = "translate-x-0 translate-y-0 opacity-100 scale-100";
+                    else if (isExiting) transformClasses = "translate-x-full translate-y-full opacity-0 scale-90";
+                    return (
+                      <img key={index} src={img} alt="slide" className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out transform rounded-full overflow-hidden ${transformClasses}`} />
+                    );
+                  })}
+                </div>
+
+                <div className="absolute top-4 -right-12 h-28 w-28 z-50">
+                  <div className="absolute inset-0 bg-purple-400 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                    <FaHeart className="text-red-600 text-2xl animate-pulse" />
+                  </div>
+                  <div className="absolute inset-0 animate-spin-slow-custom">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <defs><path id="badgePath" d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" /></defs>
+                      <text style={{ letterSpacing: '0.22em' }} className="text-[9px] fill-black uppercase">
+                        <textPath href="#badgePath">HAPPY BIRTHDAY • HAPPY BIRTHDAY •</textPath>
+                      </text>
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap">
+                  <div className="bg-purple-500 border-4 border-white px-10 py-1.5 rounded-full shadow-[4px_4px_0_#FFF] flex items-center gap-6 relative">
+                    <h1 className="text-3xl font-black text-white italic tracking-tighter drop-shadow-[2px_2px_0_#000]">Eah_</h1>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="absolute -right-8 top-[-2px] h-10 w-16 bg-purple-900 -z-10 [clip-path:polygon(0%_0%,_100%_0%,_75%_50%,_100%_100%,_0%_100%)]" />
+
+            <button
+              onClick={() => setIsBookOpen(true)}
+              className="mt-16 bg-white text-purple-700 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-pink-100 transition-colors shadow-lg animate-bounce hover:cursor-pointer"
+            >
+              <FaBookOpen /> Open
+            </button>
           </div>
+        </>
+      )}
 
-          <div className="relative mt-2 animate-entrance-custom opacity-0" style={{ animationDelay: `${carouselDelay}s` }}>
-            <div className="relative border-4 border-white rounded-full h-[260px] w-[260px] overflow-hidden bg-black/20 shadow-2xl z-10">
-              {images.map((img, index) => {
-                const isActive = index === currentIndex;
-                const isExiting = index === prevIndex;
-                let transformClasses = "translate-x-full -translate-y-full opacity-0 scale-110";
-                if (isActive) transformClasses = "translate-x-0 translate-y-0 opacity-100 scale-100";
-                else if (isExiting) transformClasses = "translate-x-full translate-y-full opacity-0 scale-90";
-                return (
-                  <img key={index} src={img} alt="slide" className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out transform rounded-full overflow-hidden ${transformClasses}`} />
-                );
-              })}
-            </div>
-
-            <div className="absolute top-4 -right-12 h-28 w-28 z-50">
-              <div className="absolute inset-0 bg-purple-400 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                <FaHeart className="text-red-600 text-2xl animate-pulse" />
-              </div>
-              <div className="absolute inset-0 animate-spin-slow-custom">
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <defs><path id="badgePath" d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" /></defs>
-                  <text style={{ letterSpacing: '0.22em' }} className="text-[9px] fill-black uppercase">
-                    <textPath href="#badgePath">HAPPY BIRTHDAY • HAPPY BIRTHDAY •</textPath>
-                  </text>
-                </svg>
-              </div>
-            </div>
-
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap">
-              <div className="bg-purple-500 border-4 border-white px-10 py-1.5 rounded-full shadow-[4px_4px_0_#FFF] flex items-center gap-6 relative">
-                <h1 className="text-3xl font-black text-white italic tracking-tighter drop-shadow-[2px_2px_0_#000]">Eah_</h1>
-              </div>
-            </div>  
-          </div>
-        </div>
-
-        <button 
-          onClick={() => setIsBookOpen(true)}
-          className="mt-16 bg-white text-purple-700 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-pink-100 transition-colors shadow-lg animate-bounce hover:cursor-pointer"
-        >
-          <FaBookOpen /> Open
-        </button>
-      </div>
-
-      {/* --- RESPONSIVE LARGE VIDEO MODAL --- */}
       {isBookOpen && (
         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8 overflow-y-auto">
           <div className="relative w-full max-w-6xl bg-white rounded-xl shadow-2xl flex flex-col md:flex-row min-h-fit max-h-[95vh] border-[8px] md:border-[16px] border-[#3d2422] overflow-hidden">
-            
-            {/* Close Button */}
-            <button 
-              onClick={() => setIsBookOpen(false)}
+            <button
+              onClick={() => {
+                setIsBookOpen(false);
+                playMusic();
+              }}
               className="absolute top-4 right-4 text-gray-800 z-50 hover:scale-125 transition-transform bg-white/80 rounded-full p-1 shadow-md hover:cursor-pointer"
             >
               <FaTimes size={28} />
             </button>
 
-            {/* Book Spine (Desktop Only) */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1.5 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 z-10 shadow-inner" />
-
-            {/* Left Page - Local Video 1 */}
             <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 bg-[#fdfbf7]">
-               <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">April 4, 2025</h3>
-               <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
-                  <video 
-                    className="w-full h-auto max-h-[400px] object-cover" 
-                    controls 
-                    playsInline
-                  >
-                    <source src={makatiFlower} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-               </div>
-               <p className="mt-6 text-sm font-serif text-gray-400 tracking-widest">PAGE 01</p>
+              <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">April 4, 2025</h3>
+              <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
+                <video
+                  className="w-full h-auto max-h-[400px] object-cover"
+                  controls
+                  playsInline
+                  onPlay={pauseMusic}
+                  onPause={playMusic}
+                  onEnded={playMusic}
+                >
+                  <source src={makatiFlower} type="video/mp4" />
+                </video>
+              </div>
             </div>
 
-            {/* Right Page - Local Video 2 */}
             <div className="flex-1 p-4 md:p-10 flex flex-col items-center justify-center bg-[#fdfbf7]">
-                <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">March 18, 2026</h3>
-                <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
-                   <video 
-                     className="w-full h-auto max-h-[400px] object-cover" 
-                     controls 
-                     playsInline
-                   >
-                     <source src={makatiCake} type="video/mp4" />
-                     Your browser does not support the video tag.
-                   </video>
-                </div>
-                <p className="mt-6 text-sm font-serif text-gray-400 tracking-widest">PAGE 02</p>
+              <h3 className="mb-6 font-serif italic text-gray-800 text-xl font-bold">March 18, 2026</h3>
+              <div className="w-full relative bg-black rounded-lg shadow-2xl overflow-hidden border-4 border-white">
+                <video
+                  className="w-full h-auto max-h-[400px] object-cover"
+                  controls
+                  playsInline
+                  onPlay={pauseMusic}
+                  onPause={playMusic}
+                  onEnded={playMusic}
+                >
+                  <source src={makatiCake} type="video/mp4" />
+                </video>
+              </div>
             </div>
           </div>
         </div>
